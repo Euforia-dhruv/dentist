@@ -2,6 +2,8 @@
 
 import { ContactShadows } from '@react-three/drei';
 import { DentalArch } from './DentalArch';
+import { GumArch } from './GumArch';
+import { FloatingTools } from './FloatingTools';
 import { CameraRig } from './CameraRig';
 
 interface SceneProps {
@@ -45,6 +47,22 @@ function StudioLighting() {
         distance={10}
         decay={2}
       />
+
+      <pointLight
+        position={[3, 2, 3]}
+        intensity={0.15}
+        color="#e8d0c0"
+        distance={8}
+        decay={2}
+      />
+
+      <pointLight
+        position={[-2, 1, 4]}
+        intensity={0.12}
+        color="#d4c49a"
+        distance={8}
+        decay={2}
+      />
     </>
   );
 }
@@ -58,6 +76,18 @@ export function Scene({ scrollProgress, reducedMotion, isMobile }: SceneProps) {
       <StudioLighting />
 
       <DentalArch
+        scrollProgress={scrollProgress}
+        reducedMotion={reducedMotion}
+        isMobile={isMobile}
+      />
+
+      <GumArch
+        scrollProgress={scrollProgress}
+        reducedMotion={reducedMotion}
+        isMobile={isMobile}
+      />
+
+      <FloatingTools
         scrollProgress={scrollProgress}
         reducedMotion={reducedMotion}
         isMobile={isMobile}

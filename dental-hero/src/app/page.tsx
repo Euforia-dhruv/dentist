@@ -140,8 +140,11 @@ export default function Home() {
       </section>
 
       {/* Technology */}
-      <section id="technology" className="section-padding bg-[#171725]">
-        <div className="max-w-[1200px] mx-auto">
+      <section id="technology" className="section-padding bg-[#171725] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <img src="/images/treatment-room.jpg" alt="" className="w-full h-full object-cover" aria-hidden="true" />
+        </div>
+        <div className="max-w-[1200px] mx-auto relative z-10">
           <div className="text-center mb-20 md:mb-24">
             <p className="eyebrow text-center !text-[#c9a87c]/60">Advanced Tools</p>
             <h2 className="section-heading text-center !text-white">
@@ -153,21 +156,25 @@ export default function Home() {
               {
                 title: 'Digital Scanning',
                 desc: 'Precise digital impressions without conventional discomfort.',
+                icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z',
               },
               {
                 title: '3D Treatment Planning',
                 desc: 'Every treatment mapped digitally before it begins.',
+                icon: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
               },
               {
                 title: 'Precision Dentistry',
                 desc: 'Technology combined with clinician expertise for exceptional outcomes.',
+                icon: 'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z',
               },
               {
                 title: 'Personalized Care',
                 desc: 'Treatment designed around the individual patient.',
+                icon: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z',
               },
             ].map((tech, i) => (
-              <div key={i} className="p-8 border border-white/[0.05] hover:border-[#c9a87c]/15 transition-colors duration-500 group">
+              <div key={i} className="p-8 border border-white/[0.05] hover:border-[#c9a87c]/15 transition-colors duration-500 group backdrop-blur-sm bg-white/[0.02]">
                 <span className="text-[10px] font-medium tracking-[0.25em] text-[#c9a87c]/40">
                   0{i + 1}
                 </span>
@@ -218,7 +225,7 @@ export default function Home() {
                 </a>
               </div>
             </div>
-            <div className="order-1 lg:order-2 aspect-[3/4] bg-gradient-to-br from-[#e8e0d4] to-[#d4ccc0] flex items-center justify-center overflow-hidden">
+            <div className="order-1 lg:order-2 aspect-[3/4] overflow-hidden">
               <img
                 src="/images/doctor-portrait.jpg"
                 alt="Dr. Alexandra Chen"
@@ -239,13 +246,14 @@ export default function Home() {
               Smile Transformations
             </h2>
           </div>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-3 gap-6">
             {[
               { img: '/images/smile-after-1.jpg', label: 'Smile Makeover', timeline: '6 weeks' },
               { img: '/images/before-after-1.jpg', label: 'Veneers', timeline: '4 weeks' },
+              { img: '/images/smile-closeup.jpg', label: 'Whitening', timeline: '2 weeks' },
             ].map((item, i) => (
               <div key={i} className="group cursor-pointer">
-                <div className="aspect-[4/3] bg-gradient-to-br from-[#f0ebe3] to-[#e8e0d4] overflow-hidden mb-4">
+                <div className="aspect-[4/3] overflow-hidden mb-4">
                   <img
                     src={item.img}
                     alt={`${item.label} transformation`}
@@ -320,7 +328,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="aspect-[4/3] bg-gradient-to-br from-[#f0ebe3] to-[#e8e0d4] flex items-center justify-center overflow-hidden">
+            <div className="aspect-[4/3] overflow-hidden">
               <img
                 src="/images/clinic-interior.jpg"
                 alt="Lumière Dental clinic interior"
