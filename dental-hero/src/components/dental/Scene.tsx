@@ -7,60 +7,49 @@ import { CameraRig } from './CameraRig';
 interface SceneProps {
   scrollProgress: number;
   reducedMotion: boolean;
+  isMobile: boolean;
 }
 
 function StudioLighting() {
   return (
     <>
-      <ambientLight intensity={0.25} color="#f8f4ef" />
+      <ambientLight intensity={0.7} color="#faf5ef" />
 
-      <directionalLight
-        position={[4, 6, 4]}
-        intensity={1.4}
+      <spotLight
+        position={[1, 5, 8]}
+        angle={0.65}
+        penumbra={1.0}
+        intensity={2.0}
         color="#fff8f0"
         castShadow
         shadow-mapSize={[1024, 1024]}
-        shadow-camera-near={0.5}
-        shadow-camera-far={15}
-        shadow-camera-left={-3}
-        shadow-camera-right={3}
-        shadow-camera-top={3}
-        shadow-camera-bottom={-3}
         shadow-bias={-0.0003}
       />
 
       <directionalLight
-        position={[-3, 4, -1]}
-        intensity={0.35}
-        color="#f0e8ff"
+        position={[-3, 4, 3]}
+        intensity={0.55}
+        color="#ede8f2"
       />
 
       <directionalLight
-        position={[0, 3, -4]}
-        intensity={0.25}
-        color="#fff5e6"
-      />
-
-      <spotLight
-        position={[2, 5, 3]}
-        angle={0.4}
-        penumbra={0.9}
-        intensity={0.3}
-        color="#fff8f0"
+        position={[1, 3, -5]}
+        intensity={0.6}
+        color="#fff5e8"
       />
 
       <pointLight
-        position={[0, -1, 2]}
-        intensity={0.15}
-        color="#ffe8d0"
-        distance={6}
+        position={[0, 0, 5]}
+        intensity={0.3}
+        color="#fff0e0"
+        distance={10}
         decay={2}
       />
     </>
   );
 }
 
-export function Scene({ scrollProgress, reducedMotion }: SceneProps) {
+export function Scene({ scrollProgress, reducedMotion, isMobile }: SceneProps) {
   return (
     <>
       <color attach="background" args={['#faf8f5']} />
@@ -71,20 +60,22 @@ export function Scene({ scrollProgress, reducedMotion }: SceneProps) {
       <DentalArch
         scrollProgress={scrollProgress}
         reducedMotion={reducedMotion}
+        isMobile={isMobile}
       />
 
       <ContactShadows
         position={[0, -1.5, 0]}
-        opacity={0.15}
-        scale={6}
-        blur={3}
+        opacity={0.08}
+        scale={8}
+        blur={5}
         far={4}
-        color="#1a1a2e"
+        color="#3a3530"
       />
 
       <CameraRig
         scrollProgress={scrollProgress}
         reducedMotion={reducedMotion}
+        isMobile={isMobile}
       />
     </>
   );

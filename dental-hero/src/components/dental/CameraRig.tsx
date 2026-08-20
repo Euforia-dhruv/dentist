@@ -7,14 +7,15 @@ import * as THREE from 'three';
 interface CameraRigProps {
   scrollProgress: number;
   reducedMotion: boolean;
+  isMobile: boolean;
 }
 
-export function CameraRig({ scrollProgress, reducedMotion }: CameraRigProps) {
+export function CameraRig({ scrollProgress, reducedMotion, isMobile }: CameraRigProps) {
   const { camera } = useThree();
   const mouseRef = useRef({ x: 0, y: 0 });
-  const targetPosition = useRef(new THREE.Vector3(3.5, 1.8, 10.0));
-  const targetLookAt = useRef(new THREE.Vector3(0.5, 0, 0));
-  const currentLookAt = useRef(new THREE.Vector3(0.5, 0, 0));
+  const targetPosition = useRef(new THREE.Vector3(isMobile ? 0.0 : -0.5, isMobile ? 0.5 : 0.8, isMobile ? 5.5 : 6.2));
+  const targetLookAt = useRef(new THREE.Vector3(isMobile ? 0.0 : 0.6, 0.0, 0));
+  const currentLookAt = useRef(new THREE.Vector3(isMobile ? 0.0 : 0.6, 0.0, 0));
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -31,69 +32,114 @@ export function CameraRig({ scrollProgress, reducedMotion }: CameraRigProps) {
     const p = scrollProgress;
     const mx = mouseRef.current.x;
     const my = mouseRef.current.y;
-    const px = mx * 0.12;
-    const py = my * 0.06;
+    const px = isMobile ? 0 : mx * 0.06;
+    const py = isMobile ? 0 : my * 0.03;
 
-    if (p < 0.1) {
-      const t = p / 0.1;
-      const e = t * t * (3 - 2 * t);
-      targetPosition.current.set(
-        THREE.MathUtils.lerp(3.5, 3.2, e) + px,
-        THREE.MathUtils.lerp(1.8, 1.5, e) + py,
-        THREE.MathUtils.lerp(10.0, 8.5, e)
-      );
-      targetLookAt.current.set(0.5, THREE.MathUtils.lerp(0, 0.2, e), 0);
-    } else if (p < 0.3) {
-      const t = (p - 0.1) / 0.2;
-      const e = t * t * (3 - 2 * t);
-      targetPosition.current.set(
-        THREE.MathUtils.lerp(3.2, 2.5, e) + px,
-        THREE.MathUtils.lerp(1.5, 1.2, e) + py,
-        THREE.MathUtils.lerp(8.5, 6.5, e)
-      );
-      targetLookAt.current.set(
-        THREE.MathUtils.lerp(0.5, 0.3, e),
-        THREE.MathUtils.lerp(0.2, 0.3, e),
-        THREE.MathUtils.lerp(0, 0.1, e)
-      );
-    } else if (p < 0.5) {
-      const t = (p - 0.3) / 0.2;
-      const e = t * t * (3 - 2 * t);
-      targetPosition.current.set(
-        THREE.MathUtils.lerp(2.5, 2.0, e) + px,
-        THREE.MathUtils.lerp(1.2, 0.8, e) + py,
-        THREE.MathUtils.lerp(6.5, 5.0, e)
-      );
-      targetLookAt.current.set(
-        THREE.MathUtils.lerp(0.3, 0.2, e),
-        THREE.MathUtils.lerp(0.3, 0.2, e),
-        THREE.MathUtils.lerp(0.1, 0.2, e)
-      );
-    } else if (p < 0.75) {
-      const t = (p - 0.5) / 0.25;
-      const e = t * t * (3 - 2 * t);
-      targetPosition.current.set(
-        THREE.MathUtils.lerp(2.0, 3.0, e) + px * 0.6,
-        THREE.MathUtils.lerp(0.8, 1.4, e) + py * 0.6,
-        THREE.MathUtils.lerp(5.0, 7.0, e)
-      );
-      targetLookAt.current.set(
-        THREE.MathUtils.lerp(0.2, 0.5, e),
-        THREE.MathUtils.lerp(0.2, 0, e),
-        THREE.MathUtils.lerp(0.2, 0, e)
-      );
+    const ease = (t: number) => t * t * (3 - 2 * t);
+
+    if (isMobile) {
+      if (p < 0.35) {
+        const t = ease(p / 0.35);
+        targetPosition.current.set(
+          THREE.MathUtils.lerp(0.0, 0.0, t),
+          THREE.MathUtils.lerp(0.5, 0.3, t),
+          THREE.MathUtils.lerp(5.5, 4.0, t)
+        );
+        targetLookAt.current.set(
+          THREE.MathUtils.lerp(0.0, 0.0, t),
+          THREE.MathUtils.lerp(0.0, 0.05, t),
+          0
+        );
+      } else if (p < 0.55) {
+        const t = ease((p - 0.35) / 0.2);
+        targetPosition.current.set(
+          THREE.MathUtils.lerp(0.0, 0.0, t),
+          THREE.MathUtils.lerp(0.3, 0.2, t),
+          THREE.MathUtils.lerp(4.0, 2.8, t)
+        );
+        targetLookAt.current.set(
+          THREE.MathUtils.lerp(0.0, 0.0, t),
+          THREE.MathUtils.lerp(0.05, 0.1, t),
+          0
+        );
+      } else if (p < 0.7) {
+        const t = ease((p - 0.55) / 0.15);
+        targetPosition.current.set(
+          THREE.MathUtils.lerp(0.0, 0.0, t),
+          THREE.MathUtils.lerp(0.2, 0.15, t),
+          THREE.MathUtils.lerp(2.8, 2.2, t)
+        );
+        targetLookAt.current.set(
+          THREE.MathUtils.lerp(0.0, 0.0, t),
+          THREE.MathUtils.lerp(0.1, 0.1, t),
+          0
+        );
+      } else {
+        const t = ease((p - 0.7) / 0.3);
+        targetPosition.current.set(
+          THREE.MathUtils.lerp(0.0, 0.0, t),
+          THREE.MathUtils.lerp(0.15, 0.5, t),
+          THREE.MathUtils.lerp(2.2, 5.5, t)
+        );
+        targetLookAt.current.set(
+          THREE.MathUtils.lerp(0.0, 0.0, t),
+          THREE.MathUtils.lerp(0.1, -0.1, t),
+          0
+        );
+      }
     } else {
-      const t = (p - 0.75) / 0.25;
-      const e = t * t * (3 - 2 * t);
-      targetPosition.current.set(
-        THREE.MathUtils.lerp(3.0, 3.5, e) + px * 0.4,
-        THREE.MathUtils.lerp(1.4, 1.8, e) + py * 0.4,
-        THREE.MathUtils.lerp(7.0, 10.0, e)
-      );
-      targetLookAt.current.set(0.5, 0, 0);
+      if (p < 0.35) {
+        const t = ease(p / 0.35);
+        targetPosition.current.set(
+          THREE.MathUtils.lerp(-0.5, -0.1, t) + px,
+          THREE.MathUtils.lerp(0.8, 0.5, t) + py,
+          THREE.MathUtils.lerp(6.2, 4.0, t)
+        );
+        targetLookAt.current.set(
+          THREE.MathUtils.lerp(0.6, 0.3, t),
+          THREE.MathUtils.lerp(0.0, 0.05, t),
+          0
+        );
+      } else if (p < 0.55) {
+        const t = ease((p - 0.35) / 0.2);
+        targetPosition.current.set(
+          THREE.MathUtils.lerp(-0.1, 0.0, t) + px,
+          THREE.MathUtils.lerp(0.5, 0.35, t) + py,
+          THREE.MathUtils.lerp(4.0, 2.8, t)
+        );
+        targetLookAt.current.set(
+          THREE.MathUtils.lerp(0.3, 0.2, t),
+          THREE.MathUtils.lerp(0.05, 0.1, t),
+          0
+        );
+      } else if (p < 0.7) {
+        const t = ease((p - 0.55) / 0.15);
+        targetPosition.current.set(
+          THREE.MathUtils.lerp(0.0, -0.2, t) + px * 0.5,
+          THREE.MathUtils.lerp(0.35, 0.3, t) + py * 0.5,
+          THREE.MathUtils.lerp(2.8, 2.2, t)
+        );
+        targetLookAt.current.set(
+          THREE.MathUtils.lerp(0.2, 0.15, t),
+          THREE.MathUtils.lerp(0.1, 0.15, t),
+          0
+        );
+      } else {
+        const t = ease((p - 0.7) / 0.3);
+        targetPosition.current.set(
+          THREE.MathUtils.lerp(-0.2, -0.5, t) + px * 0.3,
+          THREE.MathUtils.lerp(0.3, 0.8, t) + py * 0.3,
+          THREE.MathUtils.lerp(2.2, 6.2, t)
+        );
+        targetLookAt.current.set(
+          THREE.MathUtils.lerp(0.15, 0.6, t),
+          THREE.MathUtils.lerp(0.15, -0.1, t),
+          0
+        );
+      }
     }
 
-    const lerpFactor = 0.04;
+    const lerpFactor = 0.055;
     camera.position.lerp(targetPosition.current, lerpFactor);
     currentLookAt.current.lerp(targetLookAt.current, lerpFactor);
     camera.lookAt(currentLookAt.current);

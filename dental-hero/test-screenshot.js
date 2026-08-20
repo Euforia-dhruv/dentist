@@ -1,50 +1,35 @@
 const { exec } = require('child_process');
 const { chromium } = require('playwright');
+const fs = require('fs');
 
-const server = exec('npx next dev -p 3456', { cwd: '/home/dhruv/Documents/prototype/1/dental-hero' });
-
-server.stdout.on('data', (data) => process.stdout.write(data));
-server.stderr.on('data', (data) => process.stderr.write(data));
+const server = exec('npx next dev -p 3459', { cwd: '/home/dhruv/Documents/prototype/1/dental-hero' });
+server.stdout.on('data', (d) => process.stdout.write(d));
+server.stderr.on('data', (d) => process.stderr.write(d));
 
 setTimeout(async () => {
   try {
     const browser = await chromium.launch({ 
       headless: true,
-      args: ['--use-gl=angle', '--use-angle=swiftshader']
+      args: ['--use-gl=angle', '--use-angle=swiftshader', '--disable-gpu-sandbox']
     });
-    const errors = [];
 
-    const desktopPage = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-    desktopPage.on('pageerror', err => errors.push(err.message));
-    await desktopPage.goto('http://localhost:3456', { waitUntil: 'networkidle', timeout: 30000 });
-    await desktopPage.waitForTimeout(4000);
-    await desktopPage.screenshot({ path: '/tmp/dental-final-hero.png', timeout: 30000 });
-    console.log('Saved: desktop hero');
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    await page.goto('http://localhost:3459', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForTimeout(8000);
+    
+    const buf = await page.screenshot({ type: 'png', timeout: 60000 });
+    fs.writeFileSync('/tmp/dental-hero-v3.png', buf);
+    console.log('Saved hero');
 
-    await desktopPage.evaluate(() => window.scrollTo(0, document.body.scrollHeight - 900));
-    await desktopPage.waitForTimeout(500);
-    await desktopPage.screenshot({ path: '/tmp/dental-final-footer.png', timeout: 30000 });
-    console.log('Saved: desktop footer');
-    await desktopPage.close();
-
-    const mobilePage = await browser.newPage({ viewport: { deviceScaleFactor: 2, width: 390, height: 844, isMobile: true, hasTouch: true } });
-    mobilePage.on('pageerror', err => errors.push(err.message));
-    await mobilePage.goto('http://localhost:3456', { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await mobilePage.waitForTimeout(8000);
-    await mobilePage.screenshot({ path: '/tmp/dental-final-mobile.png', timeout: 30000 });
-    console.log('Saved: mobile hero');
-    await mobilePage.close();
-
-    if (errors.length > 0) {
-      console.log('Errors:');
-      errors.forEach(e => console.log(' ', e.substring(0, 200)));
-    } else {
-      console.log('No errors');
-    }
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight - 900));
+    await page.waitForTimeout(1000);
+    const buf2 = await page.screenshot({ type: 'png', timeout: 60000 });
+    fs.writeFileSync('/tmp/dental-hero-v3-footer.png', buf2);
+    console.log('Saved footer');
 
     await browser.close();
   } catch (e) {
-    console.log('Test error:', e.message);
+    console.log('Error:', e.message);
   }
   server.kill();
   process.exit(0);

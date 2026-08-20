@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -8,40 +8,58 @@ const inter = Inter({
   weight: ["200", "300", "400", "500", "600"],
 });
 
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  style: ["normal", "italic"],
+});
+
 export const metadata: Metadata = {
   title: {
     default: "Lumière Dental | Premium Modern Dentistry",
     template: "%s | Lumière Dental",
   },
-  description: "Advanced dentistry meets luxury design. Experience modern dental care with precision technology, personalized treatment, and exceptional results in New York.",
-  keywords: ["dentist", "dental", "cosmetic dentistry", "dental implants", "veneers", "teeth whitening", "smile makeover", "New York dentist", "premium dental care"],
+  description:
+    "Advanced dentistry meets refined design. Precision technology, personalized treatment, and exceptional results in New York.",
+  keywords: [
+    "dentist",
+    "dental",
+    "cosmetic dentistry",
+    "dental implants",
+    "veneers",
+    "teeth whitening",
+    "smile makeover",
+    "New York dentist",
+    "premium dental care",
+  ],
   authors: [{ name: "Lumière Dental" }],
   creator: "Lumière Dental",
   publisher: "Lumière Dental",
-  metadataBase: new URL("https://lumieredental.com"),
-  alternates: {
-    canonical: "/",
-  },
+  metadataBase: new URL("https://dental-hero.vercel.app"),
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://lumieredental.com",
+    url: "https://dental-hero.vercel.app",
     siteName: "Lumière Dental",
     title: "Lumière Dental | Premium Modern Dentistry",
-    description: "Advanced dentistry meets luxury design. Experience modern dental care with precision technology and personalized treatment.",
+    description:
+      "Advanced dentistry meets refined design. Precision technology and personalized treatment.",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Lumière Dental - Premium Modern Dentistry",
+        alt: "Lumière Dental — Premium Modern Dentistry",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Lumière Dental | Premium Modern Dentistry",
-    description: "Advanced dentistry meets luxury design. Experience modern dental care with precision technology and personalized treatment.",
+    description:
+      "Advanced dentistry meets refined design. Precision technology and personalized treatment.",
     images: ["/og-image.jpg"],
   },
   robots: {
@@ -57,13 +75,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: LayoutProps<"/">) {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Dentist",
     name: "Lumière Dental",
-    image: "https://lumieredental.com/logo.png",
-    url: "https://lumieredental.com",
+    image: "https://dental-hero.vercel.app/og-image.jpg",
+    url: "https://dental-hero.vercel.app",
     telephone: "+1234567890",
     email: "hello@lumieredental.com",
     address: {
@@ -82,7 +102,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     openingHoursSpecification: [
       {
         "@type": "OpeningHoursSpecification",
-        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        dayOfWeek: [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+        ],
         opens: "08:00",
         closes: "18:00",
       },
@@ -94,55 +120,23 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       },
     ],
     priceRange: "$$$",
-    areaServed: {
-      "@type": "City",
-      name: "New York",
-    },
-    hasOfferCatalog: {
-      "@type": "OfferCatalog",
-      name: "Dental Services",
-      itemListElement: [
-        {
-          "@type": "Offer",
-          itemOffered: {
-            "@type": "MedicalProcedure",
-            name: "Smile Makeover",
-          },
-        },
-        {
-          "@type": "Offer",
-          itemOffered: {
-            "@type": "MedicalProcedure",
-            name: "Dental Implants",
-          },
-        },
-        {
-          "@type": "Offer",
-          itemOffered: {
-            "@type": "MedicalProcedure",
-            name: "Veneers",
-          },
-        },
-        {
-          "@type": "Offer",
-          itemOffered: {
-            "@type": "MedicalProcedure",
-            name: "Teeth Whitening",
-          },
-        },
-      ],
-    },
+    areaServed: { "@type": "City", name: "New York" },
   };
 
   return (
-    <html lang="en" className={`${inter.variable} antialiased`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${cormorant.variable}`}
+    >
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
+          }}
         />
       </head>
-      <body className="min-h-screen">{children}</body>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

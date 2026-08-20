@@ -5,7 +5,6 @@ import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { ScrollController } from './ScrollController';
 import { LoadingScreen } from './LoadingScreen';
-import { MobileFallback } from './MobileFallback';
 import { Scene } from './Scene';
 
 interface Chapter {
@@ -102,10 +101,10 @@ function useDeviceDetection() {
   return { isMobile, reducedMotion };
 }
 
-function HeroCanvas({ scrollProgress, reducedMotion }: { scrollProgress: number; reducedMotion: boolean }) {
+function HeroCanvas({ scrollProgress, reducedMotion, isMobile }: { scrollProgress: number; reducedMotion: boolean; isMobile: boolean }) {
   return (
     <Canvas
-      camera={{ position: [3.5, 1.8, 10.0], fov: 32 }}
+      camera={{ position: isMobile ? [0.0, 0.5, 5.5] : [-0.5, 0.8, 6.2], fov: isMobile ? 38 : 32, near: 0.1, far: 50 }}
       dpr={[1, 1.5]}
       gl={{
         antialias: true,
@@ -117,7 +116,7 @@ function HeroCanvas({ scrollProgress, reducedMotion }: { scrollProgress: number;
       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
     >
       <Suspense fallback={null}>
-        <Scene scrollProgress={scrollProgress} reducedMotion={reducedMotion} />
+        <Scene scrollProgress={scrollProgress} reducedMotion={reducedMotion} isMobile={isMobile} />
       </Suspense>
     </Canvas>
   );
@@ -142,7 +141,101 @@ export function DentalHero() {
     chapterRanges.findIndex(([s, e]) => scrollProgress >= s && scrollProgress < e)
   );
 
-  if (isMobile) return <MobileFallback />;
+  if (isMobile) {
+    return (
+      <ScrollController onScrollProgress={handleScrollProgress}>
+        <div className="relative h-[600vh]">
+          <div className="sticky top-0 h-screen overflow-hidden">
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  chapter < 2
+                    ? 'linear-gradient(160deg, #faf8f5 0%, #f5f0e8 50%, #f0ebe3 100%)'
+                    : chapter < 4
+                    ? 'linear-gradient(160deg, #f5f0e8 0%, #f0ebe3 50%, #ebe4d8 100%)'
+                    : 'linear-gradient(160deg, #f0ebe3 0%, #f5f0e8 50%, #faf8f5 100%)',
+              }}
+            />
+
+            <LoadingScreen />
+
+            {isLoaded && <HeroCanvas scrollProgress={scrollProgress} reducedMotion={reducedMotion} isMobile />}
+
+            <div className="absolute inset-0" style={{ zIndex: 20, pointerEvents: 'none' }}>
+              {chapters.map((ch, i) => {
+                const opacity = getChapterOpacity(scrollProgress, i);
+                if (opacity < 0.01) return null;
+                const isLast = i === chapters.length - 1;
+
+                return (
+                  <div key={i} className="absolute inset-0 flex items-end sm:items-center pb-32 sm:pb-0" style={{ opacity }}>
+                    <div className="w-full px-6 flex justify-center">
+                      <div className="text-center max-w-[340px]">
+                        {ch.eyebrow && (
+                          <p className="eyebrow mb-4 text-center">{ch.eyebrow}</p>
+                        )}
+                        <h2
+                          className={`display-heading mb-4 ${
+                            isLast ? 'text-[28px]' : 'text-[24px]'
+                          }`}
+                        >
+                          {ch.title.map((line, j) => (
+                            <span key={j}>
+                              {j === 1 && ch.title[0].includes(',') ? (
+                                <span className="text-[#c9a87c]">{line}</span>
+                              ) : (
+                                line
+                              )}
+                              {j === 0 && <br />}
+                            </span>
+                          ))}
+                        </h2>
+                        {ch.body && (
+                          <p
+                            className={`text-[12px] text-[#6a6a78] font-light leading-[1.9] tracking-[0.01em] mx-auto ${isLast ? 'mb-8' : ''} max-w-[300px]`}
+                          >
+                            {ch.body}
+                          </p>
+                        )}
+                        {isLast && (
+                          <div className="flex flex-col gap-3 justify-center pointer-events-auto">
+                            <a href="/appointment" className="btn-primary">
+                              Book an Appointment
+                            </a>
+                            <a href="#treatments" className="btn-secondary">
+                              Explore Treatments
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {scrollProgress < 0.12 && (
+              <div
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
+                style={{ zIndex: 20 }}
+              >
+                <p className="text-[9px] font-medium tracking-[0.35em] uppercase text-[#b0b0b8]">
+                  Scroll to explore
+                </p>
+                <div className="w-[1px] h-7 relative overflow-hidden">
+                  <div
+                    className="absolute top-0 left-0 w-full bg-[#c4a265]/30"
+                    style={{ height: '100%', animation: 'scrollPulse 3s ease-in-out infinite' }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </ScrollController>
+    );
+  }
 
   return (
     <ScrollController onScrollProgress={handleScrollProgress}>
@@ -162,7 +255,7 @@ export function DentalHero() {
 
           <LoadingScreen />
 
-          {isLoaded && <HeroCanvas scrollProgress={scrollProgress} reducedMotion={reducedMotion} />}
+            {isLoaded && <HeroCanvas scrollProgress={scrollProgress} reducedMotion={reducedMotion} isMobile={false} />}
 
           <div className="absolute inset-0" style={{ zIndex: 20, pointerEvents: 'none' }}>
             {chapters.map((ch, i) => {
@@ -199,17 +292,15 @@ export function DentalHero() {
                     >
                       {ch.eyebrow && (
                         <p
-                          className={`eyebrow mb-5 ${ch.align === 'center' ? 'text-center' : ''}`}
-                          style={{ textShadow: '0 0 20px rgba(250,248,245,0.9)' }}
+                          className={`eyebrow mb-6 ${ch.align === 'center' ? 'text-center' : ''}`}
                         >
                           {ch.eyebrow}
                         </p>
                       )}
                       <h2
-                        className={`display-heading mb-5 ${
-                          isLast ? 'text-[36px] sm:text-[44px] md:text-[58px]' : 'text-[30px] sm:text-[38px] md:text-[48px]'
+                        className={`display-heading mb-6 ${
+                          isLast ? 'text-[36px] sm:text-[44px] md:text-[56px]' : 'text-[30px] sm:text-[38px] md:text-[46px]'
                         }`}
-                        style={{ textShadow: '0 2px 12px rgba(250,248,245,0.95), 0 0 40px rgba(250,248,245,0.6)' }}
                       >
                         {ch.title.map((line, j) => (
                           <span key={j}>
@@ -224,10 +315,9 @@ export function DentalHero() {
                       </h2>
                       {ch.body && (
                         <p
-                          className={`text-[14px] md:text-[15px] text-[#4a4a5a] font-light leading-[1.8] ${
+                          className={`text-[13px] md:text-[14px] text-[#6a6a78] font-light leading-[1.9] tracking-[0.01em] ${
                             ch.align === 'center' ? 'mx-auto' : ''
-                          } ${isLast ? 'mb-8' : ''} max-w-[400px]`}
-                          style={{ textShadow: '0 0 24px rgba(250,248,245,0.85)' }}
+                          } ${isLast ? 'mb-10' : ''} max-w-[380px]`}
                         >
                           {ch.body}
                         </p>
@@ -251,16 +341,16 @@ export function DentalHero() {
 
           {scrollProgress < 0.12 && (
             <div
-              className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
+              className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
               style={{ zIndex: 20 }}
             >
-              <p className="text-[10px] font-medium tracking-[0.3em] uppercase text-[#999]">
+              <p className="text-[9px] font-medium tracking-[0.35em] uppercase text-[#b0b0b8]">
                 Scroll to explore
               </p>
-              <div className="w-[1px] h-8 relative overflow-hidden">
+              <div className="w-[1px] h-7 relative overflow-hidden">
                 <div
-                  className="absolute top-0 left-0 w-full bg-[#c9a87c]/40"
-                  style={{ height: '100%', animation: 'scrollPulse 2.5s ease-in-out infinite' }}
+                  className="absolute top-0 left-0 w-full bg-[#c4a265]/30"
+                  style={{ height: '100%', animation: 'scrollPulse 3s ease-in-out infinite' }}
                 />
               </div>
             </div>

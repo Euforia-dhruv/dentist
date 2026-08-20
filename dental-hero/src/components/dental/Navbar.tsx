@@ -40,10 +40,10 @@ export function Navbar() {
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 flex items-center justify-between h-[72px] md:h-[80px]">
           <Link href="/" className="flex items-baseline gap-1 no-underline">
-            <span className="text-[20px] font-light tracking-[0.06em] text-[#1a1a2e]" style={{ fontFamily: 'var(--font-cormorant)' }}>
+            <span className="text-[20px] font-light tracking-[0.06em] text-[#1a1a28]" style={{ fontFamily: 'var(--font-cormorant)' }}>
               Lumière
             </span>
-            <span className="text-[20px] font-light tracking-[0.06em] text-[#c9a87c]" style={{ fontFamily: 'var(--font-cormorant)' }}>
+            <span className="text-[20px] font-light tracking-[0.06em] text-[#c4a265]" style={{ fontFamily: 'var(--font-cormorant)' }}>
               Dental
             </span>
           </Link>
@@ -53,7 +53,7 @@ export function Navbar() {
               <a
                 key={link.label}
                 href={link.href}
-                className="link-underline text-[11px] font-medium tracking-[0.12em] uppercase text-[#6a6a7a] hover:text-[#1a1a2e] transition-colors duration-300 no-underline"
+                className="link-underline text-[11px] font-medium tracking-[0.12em] uppercase text-[#7a7a8a] hover:text-[#1a1a28] transition-colors duration-300 no-underline"
               >
                 {link.label}
               </a>
