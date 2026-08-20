@@ -18,20 +18,20 @@ setTimeout(async () => {
     desktopPage.on('pageerror', err => errors.push(err.message));
     await desktopPage.goto('http://localhost:3456', { waitUntil: 'networkidle', timeout: 30000 });
     await desktopPage.waitForTimeout(4000);
-    await desktopPage.screenshot({ path: '/tmp/dental-final-hero.png', timeout: 10000 });
+    await desktopPage.screenshot({ path: '/tmp/dental-final-hero.png', timeout: 30000 });
     console.log('Saved: desktop hero');
 
     await desktopPage.evaluate(() => window.scrollTo(0, document.body.scrollHeight - 900));
     await desktopPage.waitForTimeout(500);
-    await desktopPage.screenshot({ path: '/tmp/dental-final-footer.png', timeout: 10000 });
+    await desktopPage.screenshot({ path: '/tmp/dental-final-footer.png', timeout: 30000 });
     console.log('Saved: desktop footer');
     await desktopPage.close();
 
-    const mobilePage = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    const mobilePage = await browser.newPage({ viewport: { deviceScaleFactor: 2, width: 390, height: 844, isMobile: true, hasTouch: true } });
     mobilePage.on('pageerror', err => errors.push(err.message));
-    await mobilePage.goto('http://localhost:3456', { waitUntil: 'networkidle', timeout: 30000 });
-    await mobilePage.waitForTimeout(3000);
-    await mobilePage.screenshot({ path: '/tmp/dental-final-mobile.png', timeout: 10000 });
+    await mobilePage.goto('http://localhost:3456', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await mobilePage.waitForTimeout(8000);
+    await mobilePage.screenshot({ path: '/tmp/dental-final-mobile.png', timeout: 30000 });
     console.log('Saved: mobile hero');
     await mobilePage.close();
 

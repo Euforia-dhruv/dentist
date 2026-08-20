@@ -17,17 +17,13 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [mobileOpen]);
 
@@ -36,20 +32,18 @@ export function Navbar() {
       <nav
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-700"
         style={{
-          backgroundColor: scrolled ? 'rgba(250,248,245,0.88)' : 'transparent',
-          backdropFilter: scrolled ? 'blur(16px) saturate(1.2)' : 'none',
-          WebkitBackdropFilter: scrolled ? 'blur(16px) saturate(1.2)' : 'none',
-          borderBottom: scrolled ? '1px solid rgba(201,168,124,0.1)' : '1px solid transparent',
+          backgroundColor: scrolled ? 'rgba(251,250,247,0.92)' : 'transparent',
+          backdropFilter: scrolled ? 'blur(20px) saturate(1.2)' : 'none',
+          WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(1.2)' : 'none',
+          borderBottom: scrolled ? '1px solid rgba(200,163,106,0.08)' : '1px solid transparent',
         }}
-        role="navigation"
-        aria-label="Main navigation"
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 flex items-center justify-between h-[72px] md:h-[80px]">
-          <Link href="/" className="flex items-baseline gap-1 no-underline" aria-label="Lumière Dental Home">
-            <span className="text-[20px] font-light tracking-[0.06em] text-[#1a1a2e]">
+          <Link href="/" className="flex items-baseline gap-1 no-underline">
+            <span className="text-[20px] font-light tracking-[0.06em] text-[#1a1a2e]" style={{ fontFamily: 'var(--font-cormorant)' }}>
               Lumière
             </span>
-            <span className="text-[20px] font-extralight tracking-[0.06em] text-[#c9a87c]">
+            <span className="text-[20px] font-light tracking-[0.06em] text-[#c9a87c]" style={{ fontFamily: 'var(--font-cormorant)' }}>
               Dental
             </span>
           </Link>
@@ -59,10 +53,9 @@ export function Navbar() {
               <a
                 key={link.label}
                 href={link.href}
-                className="text-[12px] font-medium tracking-[0.1em] uppercase text-[#6a6a7a] hover:text-[#1a1a2e] transition-colors duration-300 no-underline relative group"
+                className="link-underline text-[11px] font-medium tracking-[0.12em] uppercase text-[#6a6a7a] hover:text-[#1a1a2e] transition-colors duration-300 no-underline"
               >
                 {link.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#c9a87c] transition-all duration-300 group-hover:w-full" />
               </a>
             ))}
           </div>
@@ -70,14 +63,11 @@ export function Navbar() {
           <div className="hidden lg:flex items-center gap-6">
             <a
               href="tel:+1234567890"
-              className="text-[12px] font-medium tracking-[0.06em] text-[#6a6a7a] hover:text-[#1a1a2e] transition-colors duration-300 no-underline"
+              className="text-[11px] font-medium tracking-[0.08em] text-[#6a6a7a] hover:text-[#1a1a2e] transition-colors duration-300 no-underline"
             >
               +1 (234) 567-890
             </a>
-            <Link
-              href="/appointment"
-              className="inline-flex items-center justify-center px-6 py-3 bg-[#1a1a2e] text-white text-[11px] font-medium tracking-[0.14em] uppercase no-underline hover:bg-[#2a2a3e] transition-all duration-300"
-            >
+            <Link href="/appointment" className="btn-primary !py-2.5 !px-5">
               Book Appointment
             </Link>
           </div>
@@ -90,21 +80,15 @@ export function Navbar() {
           >
             <span
               className="w-5 h-[1px] bg-[#1a1a2e] transition-all duration-400 origin-center"
-              style={{
-                transform: mobileOpen ? 'rotate(45deg) translate(2.5px, 2.5px)' : 'none',
-              }}
+              style={{ transform: mobileOpen ? 'rotate(45deg) translate(2.5px, 2.5px)' : 'none' }}
             />
             <span
               className="w-5 h-[1px] bg-[#1a1a2e] transition-all duration-400"
-              style={{
-                opacity: mobileOpen ? 0 : 1,
-              }}
+              style={{ opacity: mobileOpen ? 0 : 1 }}
             />
             <span
               className="w-5 h-[1px] bg-[#1a1a2e] transition-all duration-400 origin-center"
-              style={{
-                transform: mobileOpen ? 'rotate(-45deg) translate(2.5px, -2.5px)' : 'none',
-              }}
+              style={{ transform: mobileOpen ? 'rotate(-45deg) translate(2.5px, -2.5px)' : 'none' }}
             />
           </button>
         </div>
@@ -117,13 +101,13 @@ export function Navbar() {
           pointerEvents: mobileOpen ? 'auto' : 'none',
         }}
       >
+        <div className="absolute inset-0 bg-black/10" onClick={() => setMobileOpen(false)} />
         <div
-          className="absolute inset-0 bg-black/15"
-          onClick={() => setMobileOpen(false)}
-        />
-        <div
-          className="absolute right-0 top-0 bottom-0 w-[300px] max-w-[85vw] bg-[#faf8f5]/98 backdrop-blur-xl shadow-2xl flex flex-col pt-[88px] px-8"
+          className="absolute right-0 top-0 bottom-0 w-[300px] max-w-[85vw] flex flex-col pt-[88px] px-8"
           style={{
+            backgroundColor: 'rgba(251,250,247,0.98)',
+            backdropFilter: 'blur(20px)',
+            boxShadow: '-8px 0 40px rgba(0,0,0,0.08)',
             transform: mobileOpen ? 'translateX(0)' : 'translateX(100%)',
             transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
@@ -145,16 +129,13 @@ export function Navbar() {
           </div>
 
           <div className="mt-8 flex flex-col gap-4">
-            <a
-              href="tel:+1234567890"
-              className="text-[13px] font-light text-[#6a6a7a] no-underline"
-            >
+            <a href="tel:+1234567890" className="text-[13px] font-light text-[#6a6a7a] no-underline">
               +1 (234) 567-890
             </a>
             <Link
               href="/appointment"
               onClick={() => setMobileOpen(false)}
-              className="mt-2 inline-flex items-center justify-center px-6 py-3.5 bg-[#1a1a2e] text-white text-[11px] font-medium tracking-[0.14em] uppercase no-underline hover:bg-[#2a2a3e] transition-colors text-center"
+              className="btn-primary mt-2 text-center"
             >
               Book Appointment
             </Link>
