@@ -13,114 +13,111 @@ interface GumArchProps {
   isMobile: boolean;
 }
 
-function buildGumFromTeeth(scene: THREE.Object3D) {
-  const toothMeshes: THREE.Mesh[] = [];
+function buildGumCurve(scene: THREE.Object3D) {
+  const toothBoxes: { center: THREE.Vector3; bottom: number }[] = [];
+
   scene.traverse((child) => {
     if (child instanceof THREE.Mesh) {
       const isTooth = /(?:^|_)(?:ll|ul|lr|ur)\d/.test(child.name);
       if (isTooth) {
         child.updateMatrixWorld(true);
-        toothMeshes.push(child);
+        const box = new THREE.Box3().setFromObject(child);
+        const center = box.getCenter(new THREE.Vector3());
+        const min = box.min.clone();
+        toothBoxes.push({ center, bottom: min.y });
       }
     }
   });
 
-  const box = new THREE.Box3();
-  for (const mesh of toothMeshes) {
-    mesh.updateMatrixWorld(true);
-    const b = new THREE.Box3().setFromObject(mesh);
-    box.union(b);
-  }
-  const center = box.getCenter(new THREE.Vector3());
-  const size = box.getSize(new THREE.Vector3());
+  if (toothBoxes.length === 0) return null;
 
-  const sorted = toothMeshes
-    .map((mesh) => {
-      const pos = new THREE.Vector3();
-      new THREE.Box3().setFromObject(mesh).getCenter(pos);
-      const angle = Math.atan2(pos.z - center.z, pos.x - center.x);
-      return { mesh, pos, angle };
+  const archCenter = new THREE.Vector3();
+  toothBoxes.forEach((t) => archCenter.add(t.center));
+  archCenter.divideScalar(toothBoxes.length);
+
+  const sorted = toothBoxes
+    .map((t) => {
+      const angle = Math.atan2(t.center.z - archCenter.z, t.center.x - archCenter.x);
+      return { ...t, angle };
     })
     .sort((a, b) => a.angle - b.angle);
 
-  const gumWidth = size.x * 0.04;
-  const gumHeight = size.y * 0.18;
-  const points: THREE.Vector3[] = [];
+  const avgBottom = sorted.reduce((sum, t) => sum + t.bottom, 0) / sorted.length;
 
-  for (const { pos } of sorted) {
-    const dir = new THREE.Vector3().subVectors(pos, center).normalize();
-    const gumPos = pos.clone().addScaledVector(dir, gumWidth * 2);
-    gumPos.y = pos.y - size.y * 0.12;
-    points.push(gumPos);
-  }
-
-  if (points.length > 2) {
-    points.push(points[0].clone());
-  }
-
-  const curve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.5);
-
-  const shape = new THREE.Shape();
-  shape.moveTo(0, 0);
-  shape.bezierCurveTo(gumWidth, gumHeight * 0.4, gumWidth * 1.2, gumHeight * 0.8, gumWidth, gumHeight);
-  shape.bezierCurveTo(gumWidth * 0.6, gumHeight * 1.3, -gumWidth * 0.6, gumHeight * 1.3, -gumWidth, gumHeight);
-  shape.bezierCurveTo(-gumWidth * 1.2, gumHeight * 0.8, -gumWidth, gumHeight * 0.4, 0, 0);
-
-  const extrudeSettings = {
-    steps: 100,
-    extrudePath: curve,
-    bevelEnabled: false,
-  };
-
-  const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-
-  const gumCenter = new THREE.Vector3();
-  geometry.computeBoundingBox();
-  if (geometry.boundingBox) {
-    geometry.boundingBox.getCenter(gumCenter);
-  }
-  geometry.translate(-gumCenter.x, -gumCenter.y, -gumCenter.z);
-
-  return { geometry, center, size };
-}
-
-function createGumMaterial() {
-  return new THREE.MeshPhysicalMaterial({
-    color: new THREE.Color('#e8b4b4'),
-    roughness: 0.65,
-    metalness: 0.0,
-    clearcoat: 0.1,
-    clearcoatRoughness: 0.6,
-    ior: 1.4,
-    opacity: 0.92,
-    transparent: true,
-    side: THREE.DoubleSide,
-    emissive: new THREE.Color('#d49090'),
-    emissiveIntensity: 0.08,
-    sheen: 0.3,
-    sheenRoughness: 0.4,
-    sheenColor: new THREE.Color('#f0c0c0'),
+  const archPoints = sorted.map((t) => {
+    const dir = new THREE.Vector3().subVectors(t.center, archCenter).normalize();
+    const gumPos = t.center.clone().addScaledVector(dir, 0.06);
+    gumPos.y = avgBottom - 0.04;
+    return gumPos;
   });
+
+  if (archPoints.length > 2) {
+    archPoints.push(archPoints[0].clone());
+  }
+
+  return new THREE.CatmullRomCurve3(archPoints, false, 'catmullrom', 0.3);
 }
 
 export function GumArch({ scrollProgress, reducedMotion, isMobile }: GumArchProps) {
   const { scene } = useGLTF(GLB_MODEL_PATH);
   const groupRef = useRef<THREE.Group>(null);
 
-  const modelScale = useMemo(() => {
-    const { geometry } = buildGumFromTeeth(scene);
-    const bbox = geometry.boundingBox;
-    if (!bbox) return 1;
-    const s = bbox.getSize(new THREE.Vector3());
-    const maxDim = Math.max(s.x, s.y, s.z);
-    return (isMobile ? 1.8 : 2.6) / (maxDim || 1);
-  }, [scene, isMobile]);
+  const { geometry, material, archCenter, modelScale } = useMemo(() => {
+    const curve = buildGumCurve(scene);
+    if (!curve) {
+      return {
+        geometry: new THREE.BufferGeometry(),
+        material: new THREE.MeshPhysicalMaterial({ visible: false }),
+        archCenter: new THREE.Vector3(),
+        modelScale: 1,
+      };
+    }
 
-  const { geometry, material, gumCenter } = useMemo(() => {
-    const { geometry, center } = buildGumFromTeeth(scene);
-    const mat = createGumMaterial();
-    return { geometry, material: mat, gumCenter: center };
-  }, [scene]);
+    const tubeRadius = 0.035;
+    const tubeSegments = 128;
+    const radialSegments = 12;
+    const geo = new THREE.TubeGeometry(curve, tubeSegments, tubeRadius, radialSegments, true);
+
+    const mat = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color('#e8b4b4'),
+      roughness: 0.6,
+      metalness: 0.0,
+      clearcoat: 0.15,
+      clearcoatRoughness: 0.5,
+      ior: 1.4,
+      opacity: 0.9,
+      transparent: true,
+      side: THREE.DoubleSide,
+      emissive: new THREE.Color('#d49090'),
+      emissiveIntensity: 0.06,
+      sheen: 0.4,
+      sheenRoughness: 0.3,
+      sheenColor: new THREE.Color('#f0c0c0'),
+    });
+
+    geo.computeBoundingBox();
+    const center = new THREE.Vector3();
+    if (geo.boundingBox) {
+      geo.boundingBox.getCenter(center);
+    }
+
+    const toothBox = new THREE.Box3();
+    scene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        const isTooth = /(?:^|_)(?:ll|ul|lr|ur)\d/.test(child.name);
+        if (isTooth) {
+          child.updateMatrixWorld(true);
+          const b = new THREE.Box3().setFromObject(child);
+          toothBox.union(b);
+        }
+      }
+    });
+    const toothSize = toothBox.getSize(new THREE.Vector3());
+    const maxDim = Math.max(toothSize.x, toothSize.y, toothSize.z);
+    const scale = (isMobile ? 1.8 : 2.6) / (maxDim || 1);
+
+    return { geometry: geo, material: mat, archCenter: center, modelScale: scale };
+  }, [scene, isMobile]);
 
   useFrame((state) => {
     if (!groupRef.current || reducedMotion) return;
@@ -145,7 +142,7 @@ export function GumArch({ scrollProgress, reducedMotion, isMobile }: GumArchProp
 
     if (material) {
       const breathe = Math.sin(time * 0.5) * 0.02;
-      material.emissiveIntensity = 0.08 + breathe;
+      material.emissiveIntensity = 0.06 + breathe;
     }
 
     groupRef.current.visible = exitPhase < 0.95;
@@ -156,7 +153,7 @@ export function GumArch({ scrollProgress, reducedMotion, isMobile }: GumArchProp
       <mesh
         geometry={geometry}
         material={material}
-        position={[-gumCenter.x, -gumCenter.y, -gumCenter.z]}
+        position={[-archCenter.x, -archCenter.y, -archCenter.z]}
         scale={[modelScale, modelScale, modelScale]}
         rotation={[0.1, 0, 0]}
       />
