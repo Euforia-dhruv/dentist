@@ -2,7 +2,6 @@
 
 import { ContactShadows } from '@react-three/drei';
 import { DentalArch } from './DentalArch';
-import { GumArch } from './GumArch';
 import { FloatingTools } from './FloatingTools';
 import { CameraRig } from './CameraRig';
 
@@ -76,12 +75,6 @@ export function Scene({ scrollProgress, reducedMotion, isMobile }: SceneProps) {
       <StudioLighting />
 
       <DentalArch
-        scrollProgress={scrollProgress}
-        reducedMotion={reducedMotion}
-        isMobile={isMobile}
-      />
-
-      <GumArch
         scrollProgress={scrollProgress}
         reducedMotion={reducedMotion}
         isMobile={isMobile}
